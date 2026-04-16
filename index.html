@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora SF-12</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --ink: #1d2433;
+      --muted: #5b6474;
+      --line: #d9deea;
+      --accent: #2155d6;
+      --accent-soft: #eaf0ff;
+      --good: #1f7a3d;
+      --warn: #9a6700;
+      --bad: #b42318;
+      --shadow: 0 10px 30px rgba(22, 33, 72, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .container {
+      width: min(1160px, calc(100% - 24px));
+      margin: 24px auto 48px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #f3f6ff 100%);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.35fr 0.95fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 12px;
+      line-height: 1.2;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 560px) {
+      .meta-grid { grid-template-columns: 1fr; }
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="date"], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .question {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      margin-top: 14px;
+      background: #fcfdff;
+    }
+
+    .question-header {
+      display: flex;
+      gap: 10px;
+      align-items: start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 0.82rem;
+      padding: 6px 10px;
+      font-weight: 700;
+      border: 1px solid #ced9ff;
+    }
+
+    .question-title {
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .question-subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .option input { margin: 0; }
+    .option span { font-weight: 500; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .08s ease, opacity .2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    .primary { background: var(--accent); color: #fff; }
+    .secondary { background: #eef2f9; color: var(--ink); }
+    .ghost { background: #fff; color: var(--accent); border: 1px solid #cbd7ff; }
+
+    .sticky {
+      position: sticky;
+      top: 18px;
+    }
+
+    @media (max-width: 980px) {
+      .sticky { position: static; }
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fbfcff;
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+    }
+
+    .status.error {
+      background: #fff5f5;
+      border-color: #f0c2c2;
+      color: var(--bad);
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .score-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .score-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .score-value {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .score-qual {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .domains-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin-top: 10px;
+    }
+
+    .domains-table th,
+    .domains-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .domains-table th {
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #edf1f8;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7ba7ff, #2155d6);
+    }
+
+    .footnote {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hidden { display: none; }
+
+    .result-text {
+      white-space: pre-wrap;
+      background: #fafbff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 0.95rem;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .hero, .left-panel, .no-print { box-shadow: none; }
+      .layout { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .sticky { position: static; }
+      .container { width: 100%; margin: 0; }
+      .card, .hero { border: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Calculadora Clínica SF-12</h1>
+      <p>
+        Ferramenta estática para preenchimento do questionário SF-12 e cálculo imediato dos escores.
+        Esta versão usa o método transparente já adotado no seu conjunto de dados: itens em escala 0–100,
+        oito domínios e dois resumos finais (<strong>PHYS_SUM_0100</strong> e <strong>MENT_SUM_0100</strong>).
+      </p>
+    </section>
+
+    <div class="layout">
+      <section class="card left-panel">
+        <h2>Dados do atendimento</h2>
+        <div class="meta-grid">
+          <div>
+            <label for="patientId">Identificação do paciente</label>
+            <input id="patientId" type="text" placeholder="Ex.: P-001" />
+          </div>
+          <div>
+            <label for="visitDate">Data</label>
+            <input id="visitDate" type="date" />
+          </div>
+        </div>
+
+        <div id="questions"></div>
+
+        <div class="actions no-print">
+          <button class="primary" id="calcBtn" type="button">Calcular escores</button>
+          <button class="secondary" id="resetBtn" type="button">Limpar formulário</button>
+        </div>
+      </section>
+
+      <aside class="card sticky">
+        <h2>Resultado</h2>
+        <div id="status" class="status">Preencha as 12 respostas e clique em <strong>Calcular escores</strong>.</div>
+
+        <div id="results" class="hidden">
+          <div class="score-grid">
+            <div class="score-box">
+              <div class="score-label">Resumo físico</div>
+              <div class="score-value" id="physValue">—</div>
+              <div class="score-qual" id="physQual">—</div>
+            </div>
+            <div class="score-box">
+              <div class="score-label">Resumo mental</div>
+              <div class="score-value" id="mentValue">—</div>
+              <div class="score-qual" id="mentQual">—</div>
+            </div>
+          </div>
+
+          <h3>Domínios SF-12</h3>
+          <table class="domains-table">
+            <thead>
+              <tr>
+                <th>Domínio</th>
+                <th>Escore</th>
+                <th style="width: 42%;">Escala</th>
+              </tr>
+            </thead>
+            <tbody id="domainRows"></tbody>
+          </table>
+
+          <h3 style="margin-top: 16px;">Resumo interpretativo</h3>
+          <div id="summaryText" class="result-text"></div>
+
+          <div class="actions no-print">
+            <button class="ghost" id="copyBtn" type="button">Copiar resumo</button>
+            <button class="ghost" id="printBtn" type="button">Imprimir / PDF</button>
+          </div>
+
+          <p class="footnote">
+            Escalas de 0 a 100, com valores maiores indicando melhor estado de saúde. Os resumos físicos e mentais
+            correspondem à média dos domínios físicos e mentais, respectivamente.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        key: 'saudegeral',
+        label: '1. Em geral, diria que a sua saúde é:',
+        badge: 'GH',
+        scale: [
+          [1, 'Ótima'],
+          [2, 'Muito boa'],
+          [3, 'Boa'],
+          [4, 'Razoável'],
+          [5, 'Fraca']
+        ]
+      },
+      {
+        key: 'atividadesmoderadas',
+        label: '2. Atividades moderadas, tais como deslocar uma mesa ou aspirar uma casa:',
+        subtitle: 'Será que a sua saúde a limita nestas atividades? Se sim, quanto?',
+        badge: 'PF1',
+        scale: [
+          [1, 'Sim, muito limitada'],
+          [2, 'Sim, pouco limitada'],
+          [3, 'Não, nada limitada']
+        ]
+      },
+      {
+        key: 'saudelimitacao',
+        label: '3. Subir vários lances de escadas:',
+        subtitle: 'Será que a sua saúde a limita nesta atividade? Se sim, quanto?',
+        badge: 'PF2',
+        scale: [
+          [1, 'Sim, muito limitada'],
+          [2, 'Sim, pouco limitada'],
+          [3, 'Não, nada limitada']
+        ]
+      },
+      {
+        key: 'saudefisica',
+        label: '4. Nas últimas 4 semanas, devido ao seu estado de saúde físico, fez menos do que queria?',
+        badge: 'RP1',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      },
+      {
+        key: 'limitacaosaudefisica',
+        label: '5. Nas últimas 4 semanas, sentiu-se limitada no tipo de trabalho ou outras atividades por causa da saúde física?',
+        badge: 'RP2',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      },
+      {
+        key: 'problemasemocionais',
+        label: '6. Nas últimas 4 semanas, devido a problemas emocionais, fez menos do que queria?',
+        badge: 'RE1',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      },
+      {
+        key: 'problemasemocionaisexec',
+        label: '7. Nas últimas 4 semanas, devido a problemas emocionais, executou o trabalho ou outras atividades menos cuidadosamente do que era costume?',
+        badge: 'RE2',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      },
+      {
+        key: 'dortrabalho',
+        label: '8. Nas últimas 4 semanas, de que forma a dor interferiu com o seu trabalho normal?',
+        badge: 'BP',
+        scale: [
+          [1, 'Absolutamente nada'],
+          [2, 'Pouco'],
+          [3, 'Moderadamente'],
+          [4, 'Bastante'],
+          [5, 'Imenso']
+        ]
+      },
+      {
+        key: 'sentimcalma',
+        label: '9. Nas últimas 4 semanas, quanto tempo se sentiu calma e tranquila?',
+        badge: 'MH1',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      },
+      {
+        key: 'sentimenergia',
+        label: '10. Nas últimas 4 semanas, quanto tempo se sentiu com muita energia?',
+        badge: 'VT',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      },
+      {
+        key: 'sentimdepressao',
+        label: '11. Nas últimas 4 semanas, quanto tempo se sentiu deprimida?',
+        badge: 'MH2',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      },
+      {
+        key: 'ativsocial',
+        label: '12. Nas últimas 4 semanas, até que ponto a sua saúde física ou problemas emocionais limitaram a sua atividade social?',
+        badge: 'SF',
+        scale: [
+          [1, 'Sempre'],
+          [2, 'A maior parte do tempo'],
+          [3, 'Algum tempo'],
+          [4, 'Pouco tempo'],
+          [5, 'Nunca']
+        ]
+      }
+    ];
+
+    const questionsContainer = document.getElementById('questions');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+    const domainRowsEl = document.getElementById('domainRows');
+    const summaryTextEl = document.getElementById('summaryText');
+
+    function renderQuestions() {
+      questionsContainer.innerHTML = questions.map((q, index) => `
+        <div class="question">
+          <div class="question-header">
+            <div>
+              <p class="question-title">${q.label}</p>
+              ${q.subtitle ? `<p class="question-subtitle">${q.subtitle}</p>` : ''}
+            </div>
+            <span class="badge">${q.badge}</span>
+          </div>
+          <div class="options">
+            ${q.scale.map(([value, label]) => `
+              <label class="option">
+                <input type="radio" name="${q.key}" value="${value}" />
+                <span>${label}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function valueOf(name) {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      return checked ? Number(checked.value) : null;
+    }
+
+    function to0100(x, min, max, reverse = false) {
+      if (x == null || Number.isNaN(x)) return null;
+      if (reverse) return ((max - x) / (max - min)) * 100;
+      return ((x - min) / (max - min)) * 100;
+    }
+
+    function avg(values) {
+      const valid = values.filter(v => v != null && !Number.isNaN(v));
+      if (!valid.length) return null;
+      return valid.reduce((a, b) => a + b, 0) / valid.length;
+    }
+
+    function fmt(x) {
+      return x == null ? '—' : x.toFixed(1);
+    }
+
+    function classify(x) {
+      if (x == null) return 'Indeterminado';
+      if (x >= 80) return 'Muito bom';
+      if (x >= 60) return 'Bom';
+      if (x >= 40) return 'Moderado';
+      return 'Comprometido';
+    }
+
+    function narrative(phys, ment, domains) {
+      const worst = [...domains].sort((a, b) => a.score - b.score).slice(0, 2);
+      const best = [...domains].sort((a, b) => b.score - a.score).slice(0, 2);
+      const patientId = document.getElementById('patientId').value.trim();
+      const date = document.getElementById('visitDate').value;
+      const headerBits = [];
+      if (patientId) headerBits.push(`Paciente: ${patientId}`);
+      if (date) headerBits.push(`Data: ${new Date(date + 'T00:00:00').toLocaleDateString('pt-BR')}`);
+
+      return `${headerBits.join(' | ')}${headerBits.length ? '\n\n' : ''}` +
+        `Resumo físico: ${fmt(phys)} (${classify(phys)}).\n` +
+        `Resumo mental: ${fmt(ment)} (${classify(ment)}).\n\n` +
+        `Domínios com melhor desempenho: ${best[0].name} (${fmt(best[0].score)}) e ${best[1].name} (${fmt(best[1].score)}).\n` +
+        `Domínios mais comprometidos: ${worst[0].name} (${fmt(worst[0].score)}) e ${worst[1].name} (${fmt(worst[1].score)}).\n\n` +
+        `Interpretação resumida: o escore físico reflete a média de saúde geral, função física, limitações físicas e dor. ` +
+        `O escore mental reflete a média de limitações emocionais, saúde mental, vitalidade e funcionamento social.`;
+    }
+
+    function collectAndScore() {
+      const raw = Object.fromEntries(questions.map(q => [q.key, valueOf(q.key)]));
+      const missing = Object.entries(raw).filter(([, v]) => v == null).map(([k]) => k);
+      if (missing.length) {
+        statusEl.className = 'status error';
+        statusEl.textContent = `Há ${missing.length} resposta(s) em branco. Complete as 12 perguntas para calcular o resultado.`;
+        resultsEl.classList.add('hidden');
+        return;
+      }
+
+      statusEl.className = 'status';
+      statusEl.textContent = 'Escores calculados com sucesso.';
+
+      const items = {
+        GH_0100:  to0100(raw.saudegeral, 1, 5, true),
+        PF1_0100: to0100(raw.atividadesmoderadas, 1, 3, false),
+        PF2_0100: to0100(raw.saudelimitacao, 1, 3, false),
+        RP1_0100: to0100(raw.saudefisica, 1, 5, false),
+        RP2_0100: to0100(raw.limitacaosaudefisica, 1, 5, false),
+        RE1_0100: to0100(raw.problemasemocionais, 1, 5, false),
+        RE2_0100: to0100(raw.problemasemocionaisexec, 1, 5, false),
+        BP_0100:  to0100(raw.dortrabalho, 1, 5, true),
+        MH1_0100: to0100(raw.sentimcalma, 1, 5, true),
+        VT_0100:  to0100(raw.sentimenergia, 1, 5, true),
+        MH2_0100: to0100(raw.sentimdepressao, 1, 5, false),
+        SF_0100:  to0100(raw.ativsocial, 1, 5, false)
+      };
+
+      const domains = [
+        { key: 'GH', name: 'Saúde geral', score: items.GH_0100 },
+        { key: 'PF', name: 'Função física', score: avg([items.PF1_0100, items.PF2_0100]) },
+        { key: 'RP', name: 'Limitação física', score: avg([items.RP1_0100, items.RP2_0100]) },
+        { key: 'RE', name: 'Limitação emocional', score: avg([items.RE1_0100, items.RE2_0100]) },
+        { key: 'BP', name: 'Dor', score: items.BP_0100 },
+        { key: 'VT', name: 'Vitalidade', score: items.VT_0100 },
+        { key: 'MH', name: 'Saúde mental', score: avg([items.MH1_0100, items.MH2_0100]) },
+        { key: 'SF', name: 'Funcionamento social', score: items.SF_0100 }
+      ];
+
+      const phys = avg([domains[0].score, domains[1].score, domains[2].score, domains[4].score]);
+      const ment = avg([domains[3].score, domains[5].score, domains[6].score, domains[7].score]);
+
+      document.getElementById('physValue').textContent = fmt(phys);
+      document.getElementById('physQual').textContent = classify(phys);
+      document.getElementById('mentValue').textContent = fmt(ment);
+      document.getElementById('mentQual').textContent = classify(ment);
+
+      domainRowsEl.innerHTML = domains.map(d => `
+        <tr>
+          <td><strong>${d.key}</strong> — ${d.name}</td>
+          <td>${fmt(d.score)}</td>
+          <td>
+            <div class="bar"><div class="fill" style="width:${Math.max(0, Math.min(100, d.score))}%"></div></div>
+          </td>
+        </tr>
+      `).join('');
+
+      summaryTextEl.textContent = narrative(phys, ment, domains);
+      resultsEl.classList.remove('hidden');
+
+      window.__sf12Result = {
+        patient_id: document.getElementById('patientId').value.trim() || null,
+        date: document.getElementById('visitDate').value || null,
+        items,
+        domains: Object.fromEntries(domains.map(d => [d.key, Number(d.score.toFixed(1))])),
+        PHYS_SUM_0100: Number(phys.toFixed(1)),
+        MENT_SUM_0100: Number(ment.toFixed(1))
+      };
+    }
+
+    function resetForm() {
+      document.querySelectorAll('input[type="radio"]').forEach(el => { el.checked = false; });
+      document.getElementById('patientId').value = '';
+      document.getElementById('visitDate').value = '';
+      resultsEl.classList.add('hidden');
+      statusEl.className = 'status';
+      statusEl.innerHTML = 'Preencha as 12 respostas e clique em <strong>Calcular escores</strong>.';
+      window.__sf12Result = null;
+    }
+
+    async function copySummary() {
+      const text = summaryTextEl.textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        statusEl.className = 'status';
+        statusEl.textContent = 'Resumo copiado para a área de transferência.';
+      } catch (err) {
+        statusEl.className = 'status error';
+        statusEl.textContent = 'Não foi possível copiar automaticamente. Tente novamente.';
+      }
+    }
+
+    renderQuestions();
+    document.getElementById('calcBtn').addEventListener('click', collectAndScore);
+    document.getElementById('resetBtn').addEventListener('click', resetForm);
+    document.getElementById('copyBtn').addEventListener('click', copySummary);
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+  </script>
+</body>
+</html>
